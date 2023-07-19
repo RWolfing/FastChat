@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Fastchat config
-CONTROLLER_ADDRESS="http://172.18.5.121:21001"
+CONTROLLER_ADDRESS="http://172.xx.x.xxx:21001"
 MODEL_NAME="fastchat-t4-3b-v1.0"
 MODEL_PATH="lmsys/fastchat-t5-3b-v1.0"
 
