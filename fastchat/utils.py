@@ -11,6 +11,8 @@ import sys
 from typing import AsyncGenerator, Generator
 import warnings
 
+import requests
+
 from fastchat.constants import LOGDIR
 
 
@@ -119,6 +121,8 @@ def disable_torch_init():
 
 def get_gpu_memory(max_gpus=None):
     """Get available memory for each GPU."""
+    import torch
+
     gpu_memory = []
     num_gpus = (
         torch.cuda.device_count()
@@ -151,6 +155,30 @@ def violates_moderation(text):
         flagged = False
 
     return flagged
+
+
+def clean_flant5_ckpt(ckpt_path):
+    """
+    Flan-t5 trained with HF+FSDP saves corrupted  weights for shared embeddings,
+    Use this function to make sure it can be correctly loaded.
+    """
+    import torch
+
+    index_file = os.path.join(ckpt_path, "pytorch_model.bin.index.json")
+    index_json = json.load(open(index_file, "r"))
+
+    weightmap = index_json["weight_map"]
+
+    share_weight_file = weightmap["shared.weight"]
+    share_weight = torch.load(os.path.join(ckpt_path, share_weight_file))[
+        "shared.weight"
+    ]
+
+    for weight_name in ["decoder.embed_tokens.weight", "encoder.embed_tokens.weight"]:
+        weight_file = weightmap[weight_name]
+        weight = torch.load(os.path.join(ckpt_path, weight_file))
+        weight[weight_name] = share_weight
+        torch.save(weight, os.path.join(ckpt_path, weight_file))
 
 
 def pretty_print_semaphore(semaphore):
