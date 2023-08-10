@@ -1,0 +1,20 @@
+FROM nvidia/cuda:11.7.1-runtime-ubuntu20.04
+
+RUN apt-get update -y && \
+    apt-get install -y python3.9 python3.9-distutils curl git && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.9 get-pip.py
+
+# Get Dockerize
+ENV DOCKERIZE_VERSION v0.7.0
+
+RUN apt-get update \
+    && apt-get install -y wget \
+    && wget -O - https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
+    && apt-get autoremove -yqq --purge wget && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/RWolfing/FastChat.git
+
+WORKDIR FastChat
+RUN pip3 install --upgrade pip && \
+    pip3 install -e ".[webui]"
