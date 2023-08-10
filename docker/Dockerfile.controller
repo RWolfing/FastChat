@@ -5,11 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && \
     apt-get install -y python3.9 python3.9-distutils curl git && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3.9 get-pip.py && \
-    rm get-pip.py && \
-    apt-get clean
+    python3.9 get-pip.py
 
-RUN git clone -b controller-only https://github.com/RWolfing/FastChat.git
+RUN git clone https://github.com/RWolfing/FastChat.git
 
 WORKDIR FastChat
 RUN pip3 install --upgrade pip && \
