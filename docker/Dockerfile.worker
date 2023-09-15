@@ -1,15 +1,28 @@
 FROM nvidia/cuda:11.7.1-runtime-ubuntu20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update -y && \
     apt-get install -y python3.9 python3.9-distutils curl git && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3.9 get-pip.py && \
     pip3 install fschat
 
+RUN unset DEBIAN_FRONTEND
+
+RUN groupadd -r fastchat && useradd -r -g fastchat -u 1001 fastchat
+
+RUN mkdir /app && chown fastchat:fastchat /app
+
+WORKDIR /app
+
+USER fastchat:fastchat
+
 ENV MODEL_NAME=vicuna-7b-v1.5
 ENV MODEL_PATH=lmsys/vicuna-7b-v1.5
 ENV CONTROLLER_ADDRESS=http://localhost:21001
 ENV WORKER_ADDRESS=http://localhost:21002
+ENV PROPS=""
 
 CMD python3.9 -m fastchat.serve.model_worker \
      --model-names $MODEL_NAME \
@@ -17,4 +30,6 @@ CMD python3.9 -m fastchat.serve.model_worker \
      --worker-address $WORKER_ADDRESS \
      --controller-address $CONTROLLER_ADDRESS \
      --host 0.0.0.0 \
-     --port 8000
+     --port 8000 \
+     ${PROPS:+$PROPS} 
+

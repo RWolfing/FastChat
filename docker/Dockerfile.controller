@@ -7,11 +7,15 @@ RUN apt-get update -y && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3.9 get-pip.py
 
-RUN git clone https://github.com/RWolfing/FastChat.git
+RUN pip3 install fschat
+    
+RUN groupadd -r fastchat && useradd -r -g fastchat -u 1001 fastchat
 
-WORKDIR FastChat
-RUN pip3 install --upgrade pip && \
-    pip3 install -e .
+RUN mkdir /app && chown fastchat:fastchat /app
+
+WORKDIR /app
+
+USER fastchat:fastchat
 
 RUN unset DEBIAN_FRONTEND
 
