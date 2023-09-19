@@ -10,9 +10,9 @@ RUN apt-get update -y && \
 
 RUN unset DEBIAN_FRONTEND
 
-RUN groupadd -r fastchat && useradd -r -g fastchat -u 1001 fastchat
+RUN groupadd -r fastchat && useradd -r -g fastchat -u 1001 -m -d /home/fastchat fastchat
 
-RUN mkdir /app && chown fastchat:fastchat /app
+RUN mkdir /app && chown fastchat:fastchat /app && chown fastchat:fastchat /home/fastchat
 
 WORKDIR /app
 
