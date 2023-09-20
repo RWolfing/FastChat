@@ -1,20 +1,27 @@
 FROM nvidia/cuda:11.7.1-runtime-ubuntu20.04
 
 RUN apt-get update -y && \
-    apt-get install -y python3.9 python3.9-distutils curl git && \
+    apt-get install -y python3.9 python3.9-distutils curl gcc python3.9-dev && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3.9 get-pip.py
 
-# Get Dockerize
-ENV DOCKERIZE_VERSION v0.7.0
+RUN pip3 install plotly fschat[model_worker,webui]
 
-RUN apt-get update \
-    && apt-get install -y wget \
-    && wget -O - https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
-    && apt-get autoremove -yqq --purge wget && rm -rf /var/lib/apt/lists/*
+RUN groupadd -r fastchat && useradd -r -g fastchat -u 1001 fastchat
 
-RUN git clone https://github.com/RWolfing/FastChat.git
+RUN mkdir /app && chown fastchat:fastchat /app
 
-WORKDIR FastChat
-RUN pip3 install --upgrade pip && \
-    pip3 install -e ".[webui]"
+WORKDIR /app
+
+USER fastchat:fastchat
+
+EXPOSE 8000
+
+ENV CONTROLLER_ADDRESS=http://localhost:21001
+ENV PROPS=""
+
+CMD python3.9 -m fastchat.serve.gradio_web_server_multi \
+     --controller-url $CONTROLLER_ADDRESS \
+     --host 0.0.0.0 \
+     --port 8000 \
+     ${PROPS:+$PROPS}

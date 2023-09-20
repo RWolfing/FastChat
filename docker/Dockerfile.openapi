@@ -1,11 +1,4 @@
-FROM ubuntu:20.04
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update -y && \
-    apt-get install -y python3.9 python3.9-distutils curl git && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3.9 get-pip.py
+FROM python:3.9-slim
 
 RUN pip3 install fschat
     
@@ -17,8 +10,13 @@ WORKDIR /app
 
 USER fastchat:fastchat
 
-RUN unset DEBIAN_FRONTEND
-
 EXPOSE 8000
 
-CMD ["python3.9", "-m", "fastchat.serve.openai_api_server", "--controller-address", "https://woven-fschat.cityos-dev.woven-planet.tech", "--host", "0.0.0.0", "--port", "8000"]
+ENV CONTROLLER_ADDRESS=http://localhost:21001
+ENV PROPS=""
+
+CMD python3.9 -m fastchat.serve.openai_api_server \
+     --controller-address $CONTROLLER_ADDRESS \
+     --host 0.0.0.0 \
+     --port 8000 \
+     ${PROPS:+$PROPS}
